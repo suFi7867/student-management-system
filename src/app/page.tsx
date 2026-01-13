@@ -13,9 +13,14 @@ import {
   ArrowRight,
   CheckCircle2,
   Star,
+  Github,
+  Linkedin,
+  ExternalLink,
+  Instagram,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import Image from "next/image"
 
 export default function HomePage() {
   const features = [
@@ -237,6 +242,71 @@ export default function HomePage() {
                 <h3 className="font-semibold mb-2">Smart Alerts</h3>
                 <p className="text-sm text-muted-foreground">Real-time notifications and reminders</p>
               </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Developer Section */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-muted/30 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="order-2 lg:order-1 space-y-8">
+              <div>
+                <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+                  The Human Behind <br />
+                  <span className="gradient-text">The System</span>
+                </h2>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  Meet <span className="text-foreground font-semibold font-mono">Sufiyan Shaikh</span>, the visionary architect behind the OSMS.
+                  Driven by a passion for creating tools that matter, he designed this platform to bridge the gap between complex
+                  administration and seamless academic experience.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-4">
+                <Link href="https://github.com/suFi7867" target="_blank" rel="noopener noreferrer" className="p-3 bg-background rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm border border-border/50 group">
+                  <Github className="w-5 h-5" />
+                </Link>
+                <Link href="https://www.linkedin.com/in/sufiyan-shaikh-developer" target="_blank" rel="noopener noreferrer" className="p-3 bg-background rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm border border-border/50">
+                  <Linkedin className="w-5 h-5" />
+                </Link>
+                <Link href="https://sufi-portfolio.vercel.app/" target="_blank" rel="noopener noreferrer" className="p-3 bg-background rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm border border-border/50">
+                  <ExternalLink className="w-5 h-5" />
+                </Link>
+                <Link href="https://www.instagram.com/ss_sufi__/" target="_blank" rel="noopener noreferrer" className="p-3 bg-background rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm border border-border/50">
+                  <Instagram className="w-5 h-5" />
+                </Link>
+              </div>
+
+              <div className="bg-background/50 backdrop-blur-sm p-6 rounded-2xl border border-border/50">
+                <p className="italic text-muted-foreground">
+                  &quot;I believe education technology should be invisible—empowering people without getting in the way.
+                  OSMS is designed to be exactly that: an engine of growth for Uttaranchal University.&quot;
+                </p>
+              </div>
+
+              <Link href="/about" className="inline-block">
+                <Button variant="outline" className="gap-2">
+                  Read the Full Story
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+
+            <div className="order-1 lg:order-2 flex justify-center">
+              <div className="relative">
+                <div className="absolute -inset-4 bg-gradient-to-tr from-primary/20 to-sky-500/20 rounded-[3rem] blur-2xl opacity-50" />
+                <div className="relative w-72 h-72 sm:w-96 sm:h-96 rounded-[3rem] overflow-hidden border-8 border-background shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)]">
+                  <Image
+                    src="https://lgjpefmquouuhrmaputp.supabase.co/storage/v1/object/public/public-img/sufiyan.jpeg"
+                    alt="Sufiyan Shaikh"
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
