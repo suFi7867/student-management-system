@@ -83,8 +83,8 @@ export default function StudentsPage() {
     const [page, setPage] = useState(1)
     const [perPage] = useState(20)
     const [search, setSearch] = useState("")
-    const [department, setDepartment] = useState("")
-    const [status, setStatus] = useState("")
+    const [department, setDepartment] = useState("all")
+    const [status, setStatus] = useState("all")
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [studentToDelete, setStudentToDelete] = useState<Student | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
@@ -97,8 +97,8 @@ export default function StudentsPage() {
         setLoading(true)
         const result = await getStudents({
             search: search || undefined,
-            department: department || undefined,
-            status: status || undefined,
+            department: department === "all" ? undefined : department || undefined,
+            status: status === "all" ? undefined : status || undefined,
             page,
             per_page: perPage,
         })
@@ -170,7 +170,7 @@ export default function StudentsPage() {
                                 <SelectValue placeholder="All Departments" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">All Departments</SelectItem>
+                                <SelectItem value="all">All Departments</SelectItem>
                                 {DEPARTMENTS.map((dept) => (
                                     <SelectItem key={dept} value={dept}>
                                         {dept}
@@ -183,7 +183,7 @@ export default function StudentsPage() {
                                 <SelectValue placeholder="All Status" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">All Status</SelectItem>
+                                <SelectItem value="all">All Status</SelectItem>
                                 <SelectItem value="active">Active</SelectItem>
                                 <SelectItem value="inactive">Inactive</SelectItem>
                                 <SelectItem value="graduated">Graduated</SelectItem>

@@ -120,14 +120,7 @@ function QuickActions() {
 
 // Recent Activity Component
 async function RecentActivity() {
-    // Using dummy data since we don't have real activity yet
-    const activities = [
-        { id: 1, action: "Student registered", description: "John Doe registered as a new student", time: "5 min ago", type: "success" },
-        { id: 2, action: "Grade uploaded", description: "Dr. Smith uploaded grades for CS101", time: "25 min ago", type: "info" },
-        { id: 3, action: "Course created", description: "New course 'Advanced Algorithms' created", time: "1 hour ago", type: "info" },
-        { id: 4, action: "System backup", description: "Automated backup completed successfully", time: "2 hours ago", type: "success" },
-        { id: 5, action: "Announcement", description: "Holiday notice published", time: "3 hours ago", type: "warning" },
-    ]
+    const activities = await getRecentActivity(6)
 
     return (
         <Card>
@@ -139,25 +132,45 @@ async function RecentActivity() {
                     </CardTitle>
                     <CardDescription>Latest system updates</CardDescription>
                 </div>
-                <Button variant="ghost" size="sm" className="text-primary">
-                    View All
-                    <ArrowUpRight className="w-4 h-4 ml-1" />
-                </Button>
+                <Link href="/admin/activity">
+                    <Button variant="ghost" size="sm" className="text-primary">
+                        View All
+                        <ArrowUpRight className="w-4 h-4 ml-1" />
+                    </Button>
+                </Link>
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
-                    {activities.map((activity) => (
+                    {activities.length > 0 ? activities.map((activity: any) => (
                         <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                            <div className={`w-2 h-2 mt-2 rounded-full ${activity.type === "success" ? "bg-emerald-500" :
-                                activity.type === "warning" ? "bg-amber-500" : "bg-sky-500"
-                                }`} />
+                            <Avatar className="h-8 w-8">
+                                <AvatarImage src={activity.user?.avatar_url || undefined} />
+                                <AvatarFallback>{activity.user?.full_name?.charAt(0)}</AvatarFallback>
+                            </Avatar>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium">{activity.action}</p>
                                 <p className="text-xs text-muted-foreground truncate">{activity.description}</p>
                             </div>
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">{activity.time}</span>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                {new Date(activity.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
                         </div>
-                    ))}
+                    )) : (
+                        // Fallback dummy if no real logs
+                        [
+                            { id: 1, action: "System Live", description: "The OSMS system is now operational", time: "Just now", type: "success" },
+                            { id: 2, action: "Admin Login", description: "Administrator accessed the dashboard", time: "5 min ago", type: "info" },
+                        ].map((activity) => (
+                            <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                                <div className="w-2 h-2 mt-2 rounded-full bg-emerald-500" />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium">{activity.action}</p>
+                                    <p className="text-xs text-muted-foreground truncate">{activity.description}</p>
+                                </div>
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">{activity.time}</span>
+                            </div>
+                        ))
+                    )}
                 </div>
             </CardContent>
         </Card>

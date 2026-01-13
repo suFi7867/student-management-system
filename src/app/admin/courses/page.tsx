@@ -44,34 +44,48 @@ interface Course {
     department: string
     credits: number
     semester: number
-    faculty: string
-    enrolled: number
-    maxStudents: number
+    faculty?: {
+        user?: {
+            full_name: string
+        }
+    }
+    enrolled?: number
+    max_students?: number
     status: "active" | "inactive" | "archived"
 }
+
+import { useEffect } from "react"
+import { getCourses } from "../actions"
 
 export default function CoursesPage() {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
     const [search, setSearch] = useState("")
-    const [department, setDepartment] = useState("")
-    const [semester, setSemester] = useState("")
+    const [department, setDepartment] = useState("all")
+    const [semester, setSemester] = useState("all")
+    const [courses, setCourses] = useState<Course[]>([])
+    const [loading, setLoading] = useState(true)
 
-    const courses: Course[] = [
-        { id: "1", code: "CS301", name: "Data Structures", description: "Introduction to data structures and algorithms", department: "Computer Science", credits: 4, semester: 3, faculty: "Dr. Rajesh Kumar", enrolled: 45, maxStudents: 60, status: "active" },
-        { id: "2", code: "CS302", name: "Algorithms", description: "Analysis and design of algorithms", department: "Computer Science", credits: 4, semester: 3, faculty: "Dr. Priya Singh", enrolled: 38, maxStudents: 60, status: "active" },
-        { id: "3", code: "CS401", name: "Machine Learning", description: "Introduction to ML concepts and applications", department: "Computer Science", credits: 3, semester: 7, faculty: "Dr. Amit Patel", enrolled: 30, maxStudents: 40, status: "active" },
-        { id: "4", code: "EC201", name: "Digital Electronics", description: "Fundamentals of digital circuits", department: "Electronics & Communication", credits: 4, semester: 3, faculty: "Dr. Sunita Sharma", enrolled: 52, maxStudents: 60, status: "active" },
-        { id: "5", code: "ME301", name: "Thermodynamics", description: "Principles of thermodynamics", department: "Mechanical Engineering", credits: 3, semester: 5, faculty: "Dr. Vikram Reddy", enrolled: 48, maxStudents: 60, status: "active" },
-        { id: "6", code: "CS501", name: "Deep Learning", description: "Neural networks and deep learning", department: "Computer Science", credits: 3, semester: 8, faculty: "Dr. Amit Patel", enrolled: 25, maxStudents: 30, status: "active" },
-    ]
+    useEffect(() => {
+        fetchCourses()
+    }, [search, department, semester])
 
-    const filteredCourses = courses.filter(course => {
-        const matchSearch = course.name.toLowerCase().includes(search.toLowerCase()) ||
-            course.code.toLowerCase().includes(search.toLowerCase())
-        const matchDept = !department || course.department === department
-        const matchSem = !semester || course.semester === parseInt(semester)
-        return matchSearch && matchDept && matchSem
-    })
+    async function fetchCourses() {
+        setLoading(true)
+        const result = await getCourses({
+            search: search || undefined,
+            department: department === "all" ? undefined : department || undefined,
+            semester: semester === "all" ? undefined : parseInt(semester),
+        })
+        setCourses(result.data as any[])
+        setLoading(false)
+    }
+
+    // Dummy data for initial dev preview if DB is empty
+    const displayCourses = courses.length > 0 ? courses : [
+        { id: "1", code: "CS301", name: "Data Structures", description: "Introduction to data structures and algorithms", department: "Computer Science", credits: 4, semester: 3, faculty: { user: { full_name: "Dr. Rajesh Kumar" } }, enrolled: 45, max_students: 60, status: "active" },
+        { id: "2", code: "CS302", name: "Algorithms", description: "Analysis and design of algorithms", department: "Computer Science", credits: 4, semester: 3, faculty: { user: { full_name: "Dr. Priya Singh" } }, enrolled: 38, max_students: 60, status: "active" },
+        { id: "3", code: "CS401", name: "Machine Learning", description: "Introduction to ML concepts and applications", department: "Computer Science", credits: 3, semester: 7, faculty: { user: { full_name: "Dr. Amit Patel" } }, enrolled: 30, max_students: 40, status: "active" },
+    ] as any[]
 
     return (
         <div className="space-y-6 animate-fadeIn">
@@ -107,7 +121,7 @@ export default function CoursesPage() {
                                 <SelectValue placeholder="All Departments" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">All Departments</SelectItem>
+                                <SelectItem value="all">All Departments</SelectItem>
                                 <SelectItem value="Computer Science">Computer Science</SelectItem>
                                 <SelectItem value="Electronics & Communication">Electronics & Communication</SelectItem>
                                 <SelectItem value="Mechanical Engineering">Mechanical Engineering</SelectItem>
@@ -118,7 +132,7 @@ export default function CoursesPage() {
                                 <SelectValue placeholder="All Semesters" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">All Semesters</SelectItem>
+                                <SelectItem value="all">All Semesters</SelectItem>
                                 {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
                                     <SelectItem key={sem} value={sem.toString()}>Semester {sem}</SelectItem>
                                 ))}
@@ -147,9 +161,13 @@ export default function CoursesPage() {
             </Card>
 
             {/* Course Grid/List */}
-            {viewMode === "grid" ? (
+            {loading && courses.length === 0 ? (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredCourses.map((course) => (
+                    {[1, 2, 3].map(i => <Card key={i} className="h-64 skeleton" />)}
+                </div>
+            ) : viewMode === "grid" ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {displayCourses.map((course) => (
                         <Card key={course.id} hover className="relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                             <CardHeader>
@@ -187,12 +205,12 @@ export default function CoursesPage() {
                                 <div className="space-y-3">
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                         <GraduationCap className="h-4 w-4" />
-                                        {course.faculty}
+                                        {course.faculty?.user?.full_name || "Unassigned"}
                                     </div>
                                     <div className="flex items-center gap-4 text-sm">
                                         <span className="flex items-center gap-1 text-muted-foreground">
                                             <Users className="h-4 w-4" />
-                                            {course.enrolled}/{course.maxStudents}
+                                            {course.enrolled || 0}/{course.max_students || 60}
                                         </span>
                                         <span className="flex items-center gap-1 text-muted-foreground">
                                             <BookOpen className="h-4 w-4" />
@@ -225,7 +243,7 @@ export default function CoursesPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredCourses.map((course) => (
+                                    {displayCourses.map((course) => (
                                         <tr key={course.id}>
                                             <td>
                                                 <div>
@@ -237,11 +255,11 @@ export default function CoursesPage() {
                                                 {course.department}
                                             </td>
                                             <td className="hidden lg:table-cell text-sm">
-                                                {course.faculty}
+                                                {course.faculty?.user?.full_name || "Unassigned"}
                                             </td>
                                             <td>{course.credits}</td>
                                             <td>
-                                                {course.enrolled}/{course.maxStudents}
+                                                {course.enrolled || 0}/{course.max_students || 60}
                                             </td>
                                             <td>
                                                 <Badge variant="success" className="capitalize">

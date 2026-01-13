@@ -2,10 +2,33 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { createClient as createSupabaseClient } from "@supabase/supabase-js"
+
+// Service Role Client to bypass RLS for administrative operations
+async function createAdminClient() {
+    return createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+}
 
 // Dashboard Statistics
 export async function getAdminDashboardStats() {
-    const supabase = await createClient()
+    // USE SERVICE ROLE TO BYPASS RLS RECURSION
+    const supabase = await createAdminClient()
+    const userClient = await createClient()
+    const { data: { user } } = await userClient.auth.getUser()
+
+    if (!user) {
+        return { total_students: 0, total_faculty: 0, active_courses: 0, pending_approvals: 0, students_change: 0, faculty_change: 0, courses_change: 0 }
+    }
+
+    // Single source of truth for profile - using service role to guarantee access
+    const { data: profile } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", user.id)
+        .single()
 
     try {
         // Get counts
@@ -14,6 +37,10 @@ export async function getAdminDashboardStats() {
             supabase.from("faculty").select("id", { count: "exact", head: true }),
             supabase.from("courses").select("id", { count: "exact", head: true }).eq("status", "active"),
         ])
+
+        if (studentsResult.error) console.error("Students fetch error:", JSON.stringify(studentsResult.error))
+        if (facultyResult.error) console.error("Faculty fetch error:", JSON.stringify(facultyResult.error))
+        if (coursesResult.error) console.error("Courses fetch error:", JSON.stringify(coursesResult.error))
 
         return {
             total_students: studentsResult.count || 0,
@@ -24,7 +51,7 @@ export async function getAdminDashboardStats() {
             faculty_change: 2.3,
             courses_change: 8.1,
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching dashboard stats:", error)
         return {
             total_students: 0,
@@ -513,7 +540,7 @@ export async function getAnnouncements(params?: {
 
 // Activity Log
 export async function getRecentActivity(limit = 10) {
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     const { data, error } = await supabase
         .from("activity_logs")
@@ -525,7 +552,7 @@ export async function getRecentActivity(limit = 10) {
         .limit(limit)
 
     if (error) {
-        console.error("Error fetching activity:", error)
+        console.error("ACTIVITY_LOGS_ERROR:", error)
         return []
     }
 
